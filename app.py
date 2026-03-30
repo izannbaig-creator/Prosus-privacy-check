@@ -546,7 +546,7 @@ OPTIONAL MARKETING:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 20px;">
-    <p><strong>Privacy Compliance Tool v3.0</strong> | Simple ✨ Fast ⚡ Effective 🎯</p>
+    <p><strong>Privacy Compliance Tool for Comms </strong> | Simple ✨ Fast ⚡ Effective 🎯</p>
     <p>📧 Questions? Contact: privacy@prosus.com</p>
 </div>
 """, unsafe_allow_html=True)

@@ -417,7 +417,7 @@ elif st.session_state.step == 4:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #1a1a1a; padding: 20px;">
-    <p><strong>Privacy Compliance Tool v4.0</strong> | Super Simple Edition</p>
+    <p><strong>Privacy Compliance Tool </strong> </p>
     <p>📧 Questions? Contact: privacy@prosus.com</p>
 </div>
 """, unsafe_allow_html=True)

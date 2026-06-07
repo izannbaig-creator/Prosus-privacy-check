@@ -154,29 +154,106 @@ def assess(answers):
 
 
 # ---------------------------------------------------------------------------
-# Page setup + styling (Prosus electric blue)
+# Page setup + styling (Prosus Congress Blue)
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="Prosus Event Data & Consent Tool", page_icon="🔒", layout="wide")
 
 st.markdown("""
 <style>
-    .stApp { background: linear-gradient(135deg, #f4f5ff 0%, #ffffff 60%); }
-    h1, h2, h3, h4, h5, h6, p, span, label, li, div { color: #14141f; }
-    h1 { color: #1b23e8 !important; font-weight: 800; }
-    .stButton>button {
-        width: 100%; background: #1b23e8; color: #ffffff !important;
-        height: 3.2rem; font-size: 16px; font-weight: 700; border-radius: 12px;
-        border: none; box-shadow: 0 4px 15px rgba(27,35,232,.25); transition: all .25s;
+    .stApp { background: linear-gradient(135deg, #eef4fb 0%, #ffffff 60%); }
+    body, .stApp, h1, h2, h3, h4, h5, h6, p, span, label, li {
+        font-family: 'Aptos', 'Inter', 'Segoe UI', sans-serif !important;
+        color: #14141f !important;
     }
-    .stButton>button:hover { background: #0e13a8; transform: translateY(-1px); }
+    h1 { color: #00427F !important; font-weight: 800; }
+    .stButton>button {
+        width: 100%; background: #00427F; color: #ffffff !important;
+        height: 3.2rem; font-size: 16px; font-weight: 700; border-radius: 12px;
+        border: none; box-shadow: 0 4px 15px rgba(0, 66, 127, .25); transition: all .25s;
+    }
+    .stButton>button:hover { background: #003666; transform: translateY(-1px); }
     .stTextArea textarea, .stTextInput input { background: #fff !important; color: #14141f !important; }
-    .stProgress > div > div { background-color: #1b23e8 !important; }
+    
+    /* ---- FIX: Dropdown / Selectbox menu styles ---- */
+    .stSelectbox div[role="combobox"], 
+    .stSelectbox div[data-baseweb="select"] {
+        background-color: #ffffff !important;
+        color: #14141f !important;
+    }
+    
+    /* Targets the floating dropdown overlay container list */
+    div[data-baseweb="popover"] ul {
+        background-color: #ffffff !important;
+        color: #14141f !important;
+    }
+    
+    /* Targets items within the list */
+    div[data-baseweb="popover"] li {
+        background-color: #ffffff !important;
+        color: #14141f !important;
+        border-bottom: 1px solid rgba(20,20,31,.08) !important;
+    }
+    
+    /* Dropdown list hover action */
+    div[data-baseweb="popover"] li:hover {
+        background-color: #eef4fb !important;
+        color: #00427F !important;
+    }
+    
+    select, option { background-color: #ffffff !important; color: #14141f !important; }
+    .stProgress > div > div { background-color: #00427F !important; }
     .block-head {
-        background: #1b23e8; color: #fff !important; padding: 10px 16px;
+        background: #00427F; color: #fff !important; padding: 10px 16px;
         border-radius: 10px; margin: 22px 0 8px 0; font-weight: 700;
     }
-    .block-head.opt { background: #6b6f99; }
-    pre, code { color: #f5f6ff !important; background-color: #14141f !important; }
+    .block-head.opt { background: #2f4b78; }
+
+    /* ---- FIX: Code block background and absolute dark text ---- */
+    [data-testid="stCode"],
+    [data-testid="stCodeBlock"],
+    div[class*="stCode"],
+    .stCodeBlock,
+    pre {
+        background-color: #f5f7fb !important;
+        border: 1px solid #d8dce7 !important;
+        border-radius: 10px !important;
+    }
+    [data-testid="stCode"] pre,
+    [data-testid="stCodeBlock"] pre,
+    div[class*="stCode"] pre,
+    .stCodeBlock pre,
+    pre {
+        background-color: #f5f7fb !important;
+        padding: 16px !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+    }
+    
+    /* Overrides internal prism/syntax tokens to block theme inheritance */
+    [data-testid="stCode"] code,
+    [data-testid="stCode"] code span,
+    [data-testid="stCodeBlock"] code,
+    [data-testid="stCodeBlock"] code span,
+    div[class*="stCode"] code,
+    div[class*="stCode"] code span,
+    .stCodeBlock code,
+    .stCodeBlock code span,
+    pre code,
+    pre code span {
+        color: #14141f !important;
+        background-color: transparent !important;
+    }
+    
+    /* Keep links inside HTML snippets clean and blue */
+    [data-testid="stCode"] a,
+    [data-testid="stCodeBlock"] a,
+    div[class*="stCode"] a,
+    .stCodeBlock a,
+    pre a, pre a * {
+        color: #00427F !important;
+        text-decoration: underline !important;
+    }
+
     .stAlert, .stAlert * { color: #14141f !important; }
 </style>
 """, unsafe_allow_html=True)

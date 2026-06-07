@@ -211,11 +211,13 @@ st.markdown("""
     .block-head.opt { background: #2f4b78; }
 
     /* ---- FIXED: Native Isolated Textarea Fields for text blocks ---- */
-    .custom-code-container {
+    .custom-code-box {
+        position: relative;
         background-color: #f5f7fb !important;
         border: 1px solid #d8dce7 !important;
         border-radius: 10px !important;
         padding: 16px !important;
+        padding-right: 110px !important; /* Make room for the button */
         font-family: 'Courier New', Courier, monospace !important;
         color: #14141f !important;
         font-size: 14px !important;
@@ -223,9 +225,47 @@ st.markdown("""
         word-break: break-word !important;
         margin-bottom: 12px !important;
     }
+    
+    /* Custom Clipboard Button Layout */
+    .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #00427F !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        font-family: 'Aptos', 'Inter', sans-serif !important;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .copy-btn:hover {
+        background-color: #003666 !important;
+    }
 
     .stAlert, .stAlert * { color: #14141f !important; }
 </style>
+
+<script>
+function copyToClipboard(elementId, button) {
+    var text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(function() {
+        var oldText = button.innerText;
+        button.innerText = "Copied!";
+        button.style.backgroundColor = "#2e7d32";
+        setTimeout(function() {
+            button.innerText = oldText;
+            button.style.backgroundColor = "#00427F";
+        }, 1500);
+    }, function(err) {
+        alert("Could not copy text automatically.");
+    });
+}
+</script>
 """, unsafe_allow_html=True)
 
 # session state
@@ -405,18 +445,34 @@ elif st.session_state.step == 4:
     else:
         st.success("Copy the privacy notice and consent checkbox below into your registration form.")
 
+    # Unique counter to prevent JS ID duplicates
+    if "block_counter" not in st.session_state:
+        st.session_state.block_counter = 0
+
     def block(title, body_text, html_snippet=None, optional=False):
+        st.session_state.block_counter += 1
+        b_id = f"block_{st.session_state.block_counter}"
+        h_id = f"html_{st.session_state.block_counter}"
+        
         cls = "block-head opt" if optional else "block-head"
         st.markdown(f'<div class="{cls}">{title}</div>', unsafe_allow_html=True)
         
-        # Uses standard isolated markdown wrapper with strict contrast rules instead of standard st.code blocks
-        st.markdown(f'<div class="custom-code-container">{body_text}</div>', unsafe_allow_html=True)
+        # Render clean Light Block container with an integrated standard Javascript copy button
+        st.markdown(f'''
+        <div class="custom-code-box">
+            <button class="copy-btn" onclick="copyToClipboard('{b_id}', this)">Copy Wording</button>
+            <span id="{b_id}">{body_text}</span>
+        </div>
+        ''', unsafe_allow_html=True)
         
         if html_snippet:
-            # Replaced native st.expander layout blocks completely to remove overlapping font icon bugs
-            with st.container():
-                st.markdown("<p style='font-size: 0.85em; font-weight: bold; margin-bottom: 2px; color: #2f4b78;'>HTML Version (for web forms):</p>", unsafe_allow_html=True)
-                st.markdown(f'<div class="custom-code-container">{html_snippet}</div>', unsafe_allow_html=True)
+            st.markdown("<p style='font-size: 0.85em; font-weight: bold; margin-top: 10px; margin-bottom: 2px; color: #2f4b78;'>HTML Version (for web forms):</p>", unsafe_allow_html=True)
+            st.markdown(f'''
+            <div class="custom-code-box">
+                <button class="copy-btn" onclick="copyToClipboard('{h_id}', this)">Copy HTML</button>
+                <span id="{h_id}">{html_snippet}</span>
+            </div>
+            ''', unsafe_allow_html=True)
 
     # 1. Privacy notice (always)
     block(
@@ -508,6 +564,7 @@ elif st.session_state.step == 4:
         st.session_state.step = 1
         st.session_state.answers = {}
         st.session_state.sheets_ok = None
+        st.session_state.block_counter = 0
         st.rerun()
 
 # ---------------------------------------------------------------------------

@@ -163,10 +163,10 @@ st.markdown("""
     /* Global Base Page Changes */
     .stApp { background: linear-gradient(135deg, #eef4fb 0%, #ffffff 60%); }
     
-    /* Font rules safely ignoring font-icon wrappers */
-    body, .stApp, h1, h2, h3, h4, h5, h6, p, span:not([class*="icon"]), label, li {
+    /* Font rules targeted explicitly at semantic text to completely safe-guard internal layout elements */
+    h1, h2, h3, h4, h5, h6, p, label, li {
         font-family: 'Aptos', 'Inter', 'Segoe UI', sans-serif !important;
-        color: #14141f;
+        color: #14141f !important;
     }
     h1 { color: #00427F !important; font-weight: 800; }
     
@@ -179,7 +179,7 @@ st.markdown("""
     .stButton>button:hover { background: #003666; transform: translateY(-1px); }
     .stTextArea textarea, .stTextInput input { background: #fff !important; color: #14141f !important; }
     
-    /* ---- FIXED: Dropdown Menu Elements ---- */
+    /* ---- FIXED: Dropdown Menu Overlay Interventions ---- */
     .stSelectbox div[role="combobox"], 
     .stSelectbox div[data-baseweb="select"] {
         background-color: #ffffff !important;
@@ -189,37 +189,39 @@ st.markdown("""
         background-color: #ffffff !important;
         color: #14141f !important;
     }
-    div[data-baseweb="popover"] li {
+    div[data-baseweb="popover"] li,
+    div[data-baseweb="popover"] li * {
         background-color: #ffffff !important;
         color: #14141f !important;
-        border-bottom: 1px solid rgba(20,20,31,.08) !important;
     }
-    div[data-baseweb="popover"] li:hover {
+    div[data-baseweb="popover"] li:hover,
+    div[data-baseweb="popover"] li:hover * {
         background-color: #eef4fb !important;
         color: #00427F !important;
     }
     select, option { background-color: #ffffff !important; color: #14141f !important; }
     
-    /* Layout Elements */
+    /* Headers inside Output Block items */
     .stProgress > div > div { background-color: #00427F !important; }
     .block-head {
         background: #00427F; color: #fff !important; padding: 10px 16px;
         border-radius: 10px; margin: 22px 0 8px 0; font-weight: 700;
+        font-family: 'Aptos', 'Inter', sans-serif;
     }
     .block-head.opt { background: #2f4b78; }
 
-    /* ---- FIXED: Native Code Blocks Content (Forces Light blocks with Absolute Contrast) ---- */
-    div[data-testid="stCodeBlock"] pre, 
-    div[data-testid="stCodeBlock"] code,
-    div[data-testid="stCodeBlock"] span {
+    /* ---- FIXED: Native Isolated Textarea Fields for text blocks ---- */
+    .custom-code-container {
         background-color: #f5f7fb !important;
-        color: #14141f !important;
-    }
-    
-    div[data-testid="stCodeBlock"] {
         border: 1px solid #d8dce7 !important;
         border-radius: 10px !important;
-        background-color: #f5f7fb !important;
+        padding: 16px !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        color: #14141f !important;
+        font-size: 14px !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        margin-bottom: 12px !important;
     }
 
     .stAlert, .stAlert * { color: #14141f !important; }
@@ -406,19 +408,24 @@ elif st.session_state.step == 4:
     def block(title, body_text, html_snippet=None, optional=False):
         cls = "block-head opt" if optional else "block-head"
         st.markdown(f'<div class="{cls}">{title}</div>', unsafe_allow_html=True)
-        st.code(body_text, language=None)
+        
+        # Uses standard isolated markdown wrapper with strict contrast rules instead of standard st.code blocks
+        st.markdown(f'<div class="custom-code-container">{body_text}</div>', unsafe_allow_html=True)
+        
         if html_snippet:
-            with st.expander("HTML version (for a website — real checkbox)"):
-                st.code(html_snippet, language="html")
+            # Replaced native st.expander layout blocks completely to remove overlapping font icon bugs
+            with st.container():
+                st.markdown("<p style='font-size: 0.85em; font-weight: bold; margin-bottom: 2px; color: #2f4b78;'>HTML Version (for web forms):</p>", unsafe_allow_html=True)
+                st.markdown(f'<div class="custom-code-container">{html_snippet}</div>', unsafe_allow_html=True)
 
     # 1. Privacy notice (always)
     block(
         "📋 Privacy notice (required)",
         f"Prosus collects this information to {purpose}. Prosus is the data controller and keeps your data "
         f"{retention}. You can access, correct or delete it at any time — see the Prosus Privacy Policy: {PRIVACY_URL}",
-        html_snippet=f'<p>Prosus collects this information to {purpose}. Prosus is the data controller and keeps your '
+        html_snippet=f'&lt;p&gt;Prosus collects this information to {purpose}. Prosus is the data controller and keeps your '
                      f'data {retention}. You can access, correct or delete it at any time — see the '
-                     f'<a href="{PRIVACY_URL}" target="_blank" rel="noopener">Prosus Privacy Policy</a>.</p>',
+                     f'&lt;a href="{PRIVACY_URL}" target="_blank" rel="noopener"&gt;Prosus Privacy Policy&lt;/a&gt;.&lt;/p&gt;',
     )
 
     # 2. Standard consent checkbox (always)
@@ -426,9 +433,9 @@ elif st.session_state.step == 4:
         "✅ Consent checkbox (required)",
         "☐ I agree that by submitting this form, my personal data will be processed in accordance with the "
         "Prosus Privacy Policy.",
-        html_snippet='<label>\n  <input type="checkbox" name="consent_privacy" required>\n'
+        html_snippet='&lt;label&gt;\n  &lt;input type="checkbox" name="consent_privacy" required&gt;\n'
                      f'  I agree that by submitting this form, my personal data will be processed in accordance with '
-                     f'the <a href="{PRIVACY_URL}" target="_blank" rel="noopener">Prosus Privacy Policy</a>.\n</label>',
+                     f'the &lt;a href="{PRIVACY_URL}" target="_blank" rel="noopener"&gt;Prosus Privacy Policy&lt;/a&gt;.\n&lt;/label&gt;',
     )
 
     # 3. Explicit consent (only if sensitive)
@@ -438,10 +445,10 @@ elif st.session_state.step == 4:
             f"☐ I explicitly consent to Prosus processing the sensitive information I provide "
             f"({human_list(d['sensitive'])}) for this event. Providing it is voluntary and I can withdraw my consent "
             f"at any time by contacting {contact}.",
-            html_snippet=f'<label>\n  <input type="checkbox" name="consent_sensitive" required>\n'
+            html_snippet=f'&lt;label&gt;\n  &lt;input type="checkbox" name="consent_sensitive" required&gt;\n'
                          f'  I explicitly consent to Prosus processing the sensitive information I provide '
                          f'({human_list(d["sensitive"])}) for this event. Providing it is voluntary and I can '
-                         f'withdraw my consent at any time by contacting {contact}.\n</label>',
+                         f'withdraw my consent at any time by contacting {contact}.\n&lt;/label&gt;',
         )
         st.caption("Keep this checkbox unticked by default and separate from the agreement above.")
 
@@ -457,9 +464,9 @@ elif st.session_state.step == 4:
             "📸 Photography / recording (recommended)",
             f"This event may be {medium} by Prosus, and the material may be used in Prosus communications.\n\n"
             f"☐ I prefer not to be {medium}.",
-            html_snippet=f'<p>This event may be {medium} by Prosus, and the material may be used in Prosus '
-                         f'communications.</p>\n<label>\n  <input type="checkbox" name="photo_optout">\n'
-                         f'  I prefer not to be {medium}.\n</label>',
+            html_snippet=f'&lt;p&gt;This event may be {medium} by Prosus, and the material may be used in Prosus '
+                         f'communications.&lt;/p&gt;\n&lt;label&gt;\n  &lt;input type="checkbox" name="photo_optout"&gt;\n'
+                         f'  I prefer not to be {medium}.\n&lt;/label&gt;',
             optional=True,
         )
         if d["marketing"]:
@@ -470,9 +477,9 @@ elif st.session_state.step == 4:
         block(
             "📬 Marketing consent (optional)",
             "☐ I'd like to hear from Prosus about future events and opportunities. (Optional — you can unsubscribe at any time.)",
-            html_snippet='<label>\n  <input type="checkbox" name="marketing_optin">\n'
+            html_snippet='&lt;label&gt;\n  &lt;input type="checkbox" name="marketing_optin"&gt;\n'
                          "  I'd like to hear from Prosus about future events and opportunities. (Optional — you can "
-                         "unsubscribe at any time.)\n</label>",
+                         "unsubscribe at any time.)\n&lt;/label&gt;",
             optional=True,
         )
 
@@ -482,9 +489,9 @@ elif st.session_state.step == 4:
             "🤝 Third-party sharing notice (required)",
             "Some of your data may be shared with partners who help run this event (for example [name the recipients]). "
             f"They may only use it for this event. See the Prosus Privacy Policy: {PRIVACY_URL}",
-            html_snippet="<p>Some of your data may be shared with partners who help run this event (for example "
+            html_snippet="&lt;p&gt;Some of your data may be shared with partners who help run this event (for example "
                          "[name the recipients]). They may only use it for this event. See the "
-                         f'<a href="{PRIVACY_URL}" target="_blank" rel="noopener">Prosus Privacy Policy</a>.</p>',
+                         f'&lt;a href="{PRIVACY_URL}" target="_blank" rel="noopener"&gt;Prosus Privacy Policy&lt;/a&gt;.&lt;/p&gt;',
         )
 
     # reminders
@@ -512,7 +519,7 @@ with st.sidebar:
         st.caption("✅ Last submission saved to Google Sheets + CSV")
     elif st.session_state.get("sheets_ok") is False:
         st.caption("💾 Last submission saved to local CSV")
-    with st.expander("View / download log"):
+    with st.sidebar.expander("View / download log"):
         if os.path.isfile(AUDIT_FILE):
             log_df = pd.read_csv(AUDIT_FILE)
             st.caption(f"{len(log_df)} submissions logged")

@@ -193,6 +193,7 @@ st.markdown("""
         opacity: 1 !important;
         background-color: #f5f7fb !important;
         border: 1px solid #d8dce7 !important;
+        cursor: text !important;
     }
     
     /* Style labels on output code text fields so they stand out clearly */

@@ -163,21 +163,37 @@ st.markdown("""
     /* Global Base Page Changes */
     .stApp { background: linear-gradient(135deg, #eef4fb 0%, #ffffff 60%); }
     
-    /* Font rules targeted explicitly at semantic text to completely safe-guard internal layout elements */
+    /* Font rules safely avoiding global icon breaks */
     h1, h2, h3, h4, h5, h6, p, label, li {
         font-family: 'Aptos', 'Inter', 'Segoe UI', sans-serif !important;
         color: #14141f !important;
     }
     h1 { color: #00427F !important; font-weight: 800; }
     
-    /* Buttons */
+    /* Global Form Button Settings */
     .stButton>button {
         width: 100%; background: #00427F; color: #ffffff !important;
         height: 3.2rem; font-size: 16px; font-weight: 700; border-radius: 12px;
         border: none; box-shadow: 0 4px 15px rgba(0, 66, 127, .25); transition: all .25s;
     }
     .stButton>button:hover { background: #003666; transform: translateY(-1px); }
-    .stTextArea textarea, .stTextInput input { background: #fff !important; color: #14141f !important; }
+    
+    /* ---- FIXED: Input Fields & Controlled Output Textareas ---- */
+    .stTextArea textarea, .stTextInput input { 
+        background-color: #f5f7fb !important; 
+        color: #14141f !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 14.5px !important;
+    }
+    
+    /* Keep disabled read-only textareas completely opaque and clear */
+    .stTextArea textarea:disabled {
+        -webkit-text-fill-color: #14141f !important;
+        color: #14141f !important;
+        opacity: 1 !important;
+        background-color: #f5f7fb !important;
+        border: 1px solid #d8dce7 !important;
+    }
     
     /* ---- FIXED: Dropdown Menu Overlay Interventions ---- */
     .stSelectbox div[role="combobox"], 
@@ -201,71 +217,17 @@ st.markdown("""
     }
     select, option { background-color: #ffffff !important; color: #14141f !important; }
     
-    /* Headers inside Output Block items */
+    /* Header Banners inside Output blocks */
     .stProgress > div > div { background-color: #00427F !important; }
     .block-head {
         background: #00427F; color: #fff !important; padding: 10px 16px;
-        border-radius: 10px; margin: 22px 0 8px 0; font-weight: 700;
+        border-radius: 10px; margin: 22px 0 4px 0; font-weight: 700;
         font-family: 'Aptos', 'Inter', sans-serif;
     }
     .block-head.opt { background: #2f4b78; }
 
-    /* ---- FIXED: Native Isolated Textarea Fields for text blocks ---- */
-    .custom-code-box {
-        position: relative;
-        background-color: #f5f7fb !important;
-        border: 1px solid #d8dce7 !important;
-        border-radius: 10px !important;
-        padding: 16px !important;
-        padding-right: 110px !important; /* Make room for the button */
-        font-family: 'Courier New', Courier, monospace !important;
-        color: #14141f !important;
-        font-size: 14px !important;
-        white-space: pre-wrap !important;
-        word-break: break-word !important;
-        margin-bottom: 12px !important;
-    }
-    
-    /* Custom Clipboard Button Layout */
-    .copy-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #00427F !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 6px !important;
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-        font-weight: bold !important;
-        cursor: pointer !important;
-        font-family: 'Aptos', 'Inter', sans-serif !important;
-        z-index: 10;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .copy-btn:hover {
-        background-color: #003666 !important;
-    }
-
     .stAlert, .stAlert * { color: #14141f !important; }
 </style>
-
-<script>
-function copyToClipboard(elementId, button) {
-    var text = document.getElementById(elementId).innerText;
-    navigator.clipboard.writeText(text).then(function() {
-        var oldText = button.innerText;
-        button.innerText = "Copied!";
-        button.style.backgroundColor = "#2e7d32";
-        setTimeout(function() {
-            button.innerText = oldText;
-            button.style.backgroundColor = "#00427F";
-        }, 1500);
-    }, function(err) {
-        alert("Could not copy text automatically.");
-    });
-}
-</script>
 """, unsafe_allow_html=True)
 
 # session state
@@ -445,43 +407,25 @@ elif st.session_state.step == 4:
     else:
         st.success("Copy the privacy notice and consent checkbox below into your registration form.")
 
-    # Unique counter to prevent JS ID duplicates
-    if "block_counter" not in st.session_state:
-        st.session_state.block_counter = 0
-
     def block(title, body_text, html_snippet=None, optional=False):
-        st.session_state.block_counter += 1
-        b_id = f"block_{st.session_state.block_counter}"
-        h_id = f"html_{st.session_state.block_counter}"
-        
         cls = "block-head opt" if optional else "block-head"
         st.markdown(f'<div class="{cls}">{title}</div>', unsafe_allow_html=True)
         
-        # Render clean Light Block container with an integrated standard Javascript copy button
-        st.markdown(f'''
-        <div class="custom-code-box">
-            <button class="copy-btn" onclick="copyToClipboard('{b_id}', this)">Copy Wording</button>
-            <span id="{b_id}">{body_text}</span>
-        </div>
-        ''', unsafe_allow_html=True)
+        # Uses read-only text areas. They provide native copy buttons without dark-mode styling leaks.
+        st.text_area("Label text:", value=body_text, height=90, disabled=True, label_visibility="collapsed", key=f"txt_{hash(body_text)}")
         
         if html_snippet:
-            st.markdown("<p style='font-size: 0.85em; font-weight: bold; margin-top: 10px; margin-bottom: 2px; color: #2f4b78;'>HTML Version (for web forms):</p>", unsafe_allow_html=True)
-            st.markdown(f'''
-            <div class="custom-code-box">
-                <button class="copy-btn" onclick="copyToClipboard('{h_id}', this)">Copy HTML</button>
-                <span id="{h_id}">{html_snippet}</span>
-            </div>
-            ''', unsafe_allow_html=True)
+            st.markdown("<p style='font-size: 0.82em; font-weight: bold; margin-top: 4px; margin-bottom: -12px; color: #2f4b78;'>HTML code variant:</p>", unsafe_allow_html=True)
+            st.text_area("HTML code:", value=html_snippet, height=110, disabled=True, label_visibility="collapsed", key=f"html_{hash(html_snippet)}")
 
     # 1. Privacy notice (always)
     block(
         "📋 Privacy notice (required)",
         f"Prosus collects this information to {purpose}. Prosus is the data controller and keeps your data "
         f"{retention}. You can access, correct or delete it at any time — see the Prosus Privacy Policy: {PRIVACY_URL}",
-        html_snippet=f'&lt;p&gt;Prosus collects this information to {purpose}. Prosus is the data controller and keeps your '
+        html_snippet=f'<p>Prosus collects this information to {purpose}. Prosus is the data controller and keeps your '
                      f'data {retention}. You can access, correct or delete it at any time — see the '
-                     f'&lt;a href="{PRIVACY_URL}" target="_blank" rel="noopener"&gt;Prosus Privacy Policy&lt;/a&gt;.&lt;/p&gt;',
+                     f'<a href="{PRIVACY_URL}" target="_blank" rel="noopener">Prosus Privacy Policy</a>.</p>',
     )
 
     # 2. Standard consent checkbox (always)
@@ -489,9 +433,9 @@ elif st.session_state.step == 4:
         "✅ Consent checkbox (required)",
         "☐ I agree that by submitting this form, my personal data will be processed in accordance with the "
         "Prosus Privacy Policy.",
-        html_snippet='&lt;label&gt;\n  &lt;input type="checkbox" name="consent_privacy" required&gt;\n'
+        html_snippet='<label>\n  <input type="checkbox" name="consent_privacy" required>\n'
                      f'  I agree that by submitting this form, my personal data will be processed in accordance with '
-                     f'the &lt;a href="{PRIVACY_URL}" target="_blank" rel="noopener"&gt;Prosus Privacy Policy&lt;/a&gt;.\n&lt;/label&gt;',
+                     f'the <a href="{PRIVACY_URL}" target="_blank" rel="noopener">Prosus Privacy Policy</a>.\n</label>',
     )
 
     # 3. Explicit consent (only if sensitive)
@@ -501,10 +445,10 @@ elif st.session_state.step == 4:
             f"☐ I explicitly consent to Prosus processing the sensitive information I provide "
             f"({human_list(d['sensitive'])}) for this event. Providing it is voluntary and I can withdraw my consent "
             f"at any time by contacting {contact}.",
-            html_snippet=f'&lt;label&gt;\n  &lt;input type="checkbox" name="consent_sensitive" required&gt;\n'
+            html_snippet=f'<label>\n  <input type="checkbox" name="consent_sensitive" required>\n'
                          f'  I explicitly consent to Prosus processing the sensitive information I provide '
                          f'({human_list(d["sensitive"])}) for this event. Providing it is voluntary and I can '
-                         f'withdraw my consent at any time by contacting {contact}.\n&lt;/label&gt;',
+                         f'withdraw my consent at any time by contacting {contact}.\n</label>',
         )
         st.caption("Keep this checkbox unticked by default and separate from the agreement above.")
 
@@ -520,9 +464,9 @@ elif st.session_state.step == 4:
             "📸 Photography / recording (recommended)",
             f"This event may be {medium} by Prosus, and the material may be used in Prosus communications.\n\n"
             f"☐ I prefer not to be {medium}.",
-            html_snippet=f'&lt;p&gt;This event may be {medium} by Prosus, and the material may be used in Prosus '
-                         f'communications.&lt;/p&gt;\n&lt;label&gt;\n  &lt;input type="checkbox" name="photo_optout"&gt;\n'
-                         f'  I prefer not to be {medium}.\n&lt;/label&gt;',
+            html_snippet=f'<p>This event may be {medium} by Prosus, and the material may be used in Prosus '
+                         f'communications.</p>\n<label>\n  <input type="checkbox" name="photo_optout">\n'
+                         f'  I prefer not to be {medium}.\n</label>',
             optional=True,
         )
         if d["marketing"]:
@@ -533,9 +477,9 @@ elif st.session_state.step == 4:
         block(
             "📬 Marketing consent (optional)",
             "☐ I'd like to hear from Prosus about future events and opportunities. (Optional — you can unsubscribe at any time.)",
-            html_snippet='&lt;label&gt;\n  &lt;input type="checkbox" name="marketing_optin"&gt;\n'
+            html_snippet='<label>\n  <input type="checkbox" name="marketing_optin">\n'
                          "  I'd like to hear from Prosus about future events and opportunities. (Optional — you can "
-                         "unsubscribe at any time.)\n&lt;/label&gt;",
+                         "unsubscribe at any time.)\n</label>",
             optional=True,
         )
 
@@ -545,9 +489,9 @@ elif st.session_state.step == 4:
             "🤝 Third-party sharing notice (required)",
             "Some of your data may be shared with partners who help run this event (for example [name the recipients]). "
             f"They may only use it for this event. See the Prosus Privacy Policy: {PRIVACY_URL}",
-            html_snippet="&lt;p&gt;Some of your data may be shared with partners who help run this event (for example "
+            html_snippet="<p>Some of your data may be shared with partners who help run this event (for example "
                          "[name the recipients]). They may only use it for this event. See the "
-                         f'&lt;a href="{PRIVACY_URL}" target="_blank" rel="noopener"&gt;Prosus Privacy Policy&lt;/a&gt;.&lt;/p&gt;',
+                         f'<a href="{PRIVACY_URL}" target="_blank" rel="noopener">Prosus Privacy Policy</a>.</p>',
         )
 
     # reminders
@@ -564,7 +508,6 @@ elif st.session_state.step == 4:
         st.session_state.step = 1
         st.session_state.answers = {}
         st.session_state.sheets_ok = None
-        st.session_state.block_counter = 0
         st.rerun()
 
 # ---------------------------------------------------------------------------

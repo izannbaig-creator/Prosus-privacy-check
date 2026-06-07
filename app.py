@@ -195,6 +195,14 @@ st.markdown("""
         border: 1px solid #d8dce7 !important;
     }
     
+    /* Style labels on output code text fields so they stand out clearly */
+    .stTextArea label p {
+        font-size: 0.85em !important;
+        font-weight: 700 !important;
+        color: #2f4b78 !important;
+        margin-top: 6px !important;
+    }
+    
     /* ---- FIXED: Dropdown Menu Overlay Interventions ---- */
     .stSelectbox div[role="combobox"], 
     .stSelectbox div[data-baseweb="select"] {
@@ -221,7 +229,7 @@ st.markdown("""
     .stProgress > div > div { background-color: #00427F !important; }
     .block-head {
         background: #00427F; color: #fff !important; padding: 10px 16px;
-        border-radius: 10px; margin: 22px 0 4px 0; font-weight: 700;
+        border-radius: 10px; margin: 24px 0 10px 0; font-weight: 700;
         font-family: 'Aptos', 'Inter', sans-serif;
     }
     .block-head.opt { background: #2f4b78; }
@@ -411,12 +419,12 @@ elif st.session_state.step == 4:
         cls = "block-head opt" if optional else "block-head"
         st.markdown(f'<div class="{cls}">{title}</div>', unsafe_allow_html=True)
         
-        # Uses read-only text areas. They provide native copy buttons without dark-mode styling leaks.
-        st.text_area("Label text:", value=body_text, height=90, disabled=True, label_visibility="collapsed", key=f"txt_{hash(body_text)}")
+        # Plain Copy-Paste Box
+        st.text_area("Plain text variant:", value=body_text, height=90, disabled=True, key=f"txt_{hash(body_text)}")
         
+        # HTML Copy-Paste Box inside same container, utilizing layout clean labels
         if html_snippet:
-            st.markdown("<p style='font-size: 0.82em; font-weight: bold; margin-top: 4px; margin-bottom: -12px; color: #2f4b78;'>HTML code variant:</p>", unsafe_allow_html=True)
-            st.text_area("HTML code:", value=html_snippet, height=110, disabled=True, label_visibility="collapsed", key=f"html_{hash(html_snippet)}")
+            st.text_area("HTML code variant:", value=html_snippet, height=110, disabled=True, key=f"html_{hash(html_snippet)}")
 
     # 1. Privacy notice (always)
     block(
